@@ -444,7 +444,7 @@ new class extends Component
 
     <!-- Modal -->
     @if ($showModal)
-    <div class="modal fade show" id="addNotdinPpkomModal" tabindex="-1" aria-hidden="true" style="display: block;"
+    <div class="modal fade show" id="addDokumenPengadaanModal" tabindex="-1" aria-hidden="true" style="display: block;"
         wire:key="modal-{{ $isUpdate ? 'edit-'.$editId : 'create' }}"
     >
         <div class="modal-dialog modal-lg modal-dialog-centered">
