@@ -3,7 +3,6 @@
 use Livewire\Component;
 use App\Models\SpaceNomor;
 use Livewire\WithPagination;
-use Livewire\Attributes\On;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -17,8 +16,9 @@ new class extends Component
 
     // filter state
     public $filter_tgl;
-    public $filter_nomor_agenda;
     public $filter_tahun;
+    public $filter_status;
+    public $filter_nomor_agenda;
 
     // Modal state
     public $showModal = false;
@@ -29,7 +29,7 @@ new class extends Component
 
     public function resetFilters()
     {
-        $this->reset(['filter_tgl', 'filter_nomor_agenda', 'filter_tahun']);
+        $this->reset(['filter_tgl', 'filter_tahun', 'filter_status', 'filter_nomor_agenda']);
         $this->resetPage();
     }
 
@@ -38,8 +38,15 @@ new class extends Component
         $spaceNomor = SpaceNomor::when($this->filter_tgl, function ($query) {
             $query->where('tanggal', Carbon::parse($this->filter_tgl)->format('Y-m-d'));
         })
+        ->when($this->filter_status, function ($query) {
+            if ($this->filter_status == 'terpakai') {
+                $query->where('used_at', '!=', null);
+            } else {
+                $query->where('used_at', null);
+            }
+        })
         ->when($this->filter_nomor_agenda, function ($query) {
-            $query->where('nomor_agenda', 'like', '%' . $this->filter_nomor_agenda . '%');
+            $query->where('nomor_agenda', $this->filter_nomor_agenda);
         })
         ->when($this->filter_tahun, function ($query) {
             $query->whereYear('tanggal', $this->filter_tahun);
@@ -113,31 +120,6 @@ new class extends Component
         $this->resetFilters();
     }
 
-    public function deleteConfirmation($id)
-    {
-        $this->selectedId = $id;
-        $this->dispatch('show-delete-confirmation');
-    }
-
-    #[On('delete')]
-    public function destroy()
-    {
-        SpaceNomor::find($this->selectedId)->delete();
-        $this->dispatch('toast', ['type' => 'success', 'message' => 'berhasil dihapus']);
-    }
-
-    public function edit($id)
-    {
-        $data = SpaceNomor::find($id);
-        $this->tanggal = Carbon::parse($data->tanggal)->format('d-m-Y');
-        $this->jumlah_space_nomor = $data->nomor_agenda ?? 1;
-        $this->editId = $id;
-        $this->showModal = true;
-        $this->isUpdate = true;
-        $this->resetValidation();
-        $this->dispatch('modalOpened');
-    }
-
     public function openModal()
     {
         $this->resetValidation();
@@ -194,9 +176,18 @@ new class extends Component
                                 </select>
                             </div>
                         </div>
-                        <div class="col-4">
+                        <div class="col-2">
                             <div class="form-group">
-                                <input type="text" class="form-control" wire:model.live="filter_keterangan" placeholder="Keterangan" autocomplete="off">
+                                <select class="form-control" wire:model.live="filter_status">
+                                    <option value="">Semua Status</option>
+                                    <option value="terpakai">Terpakai</option>
+                                    <option value="tersedia">Tersedia</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="form-group">
+                                <input type="text" class="form-control" wire:model.live="filter_nomor_agenda" placeholder="Nomor Agenda" autocomplete="off">
                             </div>
                         </div>
                         <div class="col-2">
@@ -224,7 +215,7 @@ new class extends Component
                                 <th class="">#</th>
                                 <th class="minw-100px">Tanggal</th>
                                 <th class="minw-100px">Nomor Agenda</th>
-                                <th class="text-end">Action</th>
+                                <th class="minw-100px">Status</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -233,9 +224,20 @@ new class extends Component
                                         <td>{{ $spaceNomor->firstItem() + $loop->index }}</td>
                                         <td>{{ $item->tanggal }}</td>
                                         <td>{{ $item->nomor_agenda }}</td>
-                                        <td class="text-end">
-                                            <x-buttons.btn-edit action="edit" id="{{ $item->id }}" />
-                                            <x-buttons.btn-delete action="deleteConfirmation" id="{{ $item->id }}" />
+                                        <td>
+                                            @if ($item->used_at)
+                                                <span class="badge bg-danger d-inline-flex align-items-center px-3 py-2" style="font-size: 0.95em; font-weight: 600; border-radius: 20px;">
+                                                    <i class="fa-solid fa-circle-xmark me-2"></i> Terpakai
+                                                </span>
+                                                <small class="text-muted ms-2" style="font-size: 0.88em;">
+                                                    <i class="fa-regular fa-clock me-1"></i>
+                                                    {{ \Carbon\Carbon::parse($item->used_at)->translatedFormat('d M Y H:i') }}
+                                                </small>
+                                            @else
+                                                <span class="badge bg-success d-inline-flex align-items-center px-3 py-2" style="font-size: 0.95em; font-weight: 600; border-radius: 20px;">
+                                                    <i class="fa-solid fa-circle-check me-2"></i> Tersedia
+                                                </span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty
