@@ -31,6 +31,21 @@ new class extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterTgl()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterKeterangan()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterTahun()
+    {
+        $this->resetPage();
+    }
+
     #[Computed]
     public function tahunList()
     {

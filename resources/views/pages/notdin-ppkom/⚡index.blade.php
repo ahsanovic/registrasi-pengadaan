@@ -52,6 +52,26 @@ new class extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterBidangId()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterTgl()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterPenyedia()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterRencanaKegiatan()
+    {
+        $this->resetPage();
+    }
+
     #[Computed]
     public function notdinPpkom()
     {

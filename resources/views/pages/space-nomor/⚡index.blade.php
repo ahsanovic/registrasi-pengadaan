@@ -41,6 +41,26 @@ new class extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterTgl()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterTahun()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterStatus()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterNomorAgenda()
+    {
+        $this->resetPage();
+    }
+
     #[Computed]
     public function spaceNomor()
     {
