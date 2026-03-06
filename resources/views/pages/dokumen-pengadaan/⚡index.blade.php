@@ -11,6 +11,7 @@ use Livewire\WithPagination;
 use Livewire\Attributes\On;
 use Carbon\Carbon;
 use App\Services\AgendaNumberService;
+use Livewire\Attributes\Computed;
 
 new class extends Component
 {
@@ -51,7 +52,8 @@ new class extends Component
         $this->resetPage();
     }
 
-    public function with()
+    #[Computed]
+    public function dokumenPengadaan()
     {
         $user = auth()->user();
         $query = DokumenPengadaan::query();
@@ -85,9 +87,7 @@ new class extends Component
         ->orderBy('nomor_agenda', 'desc')
         ->paginate(10);
 
-        return [
-            'dokumenPengadaan' => $dokumenPengadaan,
-        ];
+        return $dokumenPengadaan;
     }
 
     public function updatedNotdinPpkomSearch($value)
@@ -403,9 +403,9 @@ new class extends Component
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($dokumenPengadaan as $item)
+                                @forelse ($this->dokumenPengadaan as $item)
                                     <tr>
-                                        <td>{{ $dokumenPengadaan->firstItem() + $loop->index }}</td>
+                                        <td>{{ $this->dokumenPengadaan->firstItem() + $loop->index }}</td>
                                         <td>{{ $item->nomor_agenda }}</td>
                                         <td>{{ $item->tanggal }}</td>
                                         <td>{{ $item->notdinPpkom->notdinKpa->bidang->nama }}</td>
@@ -430,12 +430,12 @@ new class extends Component
                 </div>
                 <div class="card-footer">
                     <x-utils.pagination
-                        :hasPages="$dokumenPengadaan->hasPages()"
-                        :currentPage="$dokumenPengadaan->currentPage()"
-                        :lastPage="$dokumenPengadaan->lastPage()"
-                        :onFirstPage="$dokumenPengadaan->onFirstPage()"
-                        :hasMorePages="$dokumenPengadaan->hasMorePages()"
-                        :getUrlRange="$dokumenPengadaan->getUrlRange(1, $dokumenPengadaan->lastPage())"
+                        :hasPages="$this->dokumenPengadaan->hasPages()"
+                        :currentPage="$this->dokumenPengadaan->currentPage()"
+                        :lastPage="$this->dokumenPengadaan->lastPage()"
+                        :onFirstPage="$this->dokumenPengadaan->onFirstPage()"
+                        :hasMorePages="$this->dokumenPengadaan->hasMorePages()"
+                        :getUrlRange="$this->dokumenPengadaan->getUrlRange(1, $this->dokumenPengadaan->lastPage())"
                     />
                 </div>
             </div>

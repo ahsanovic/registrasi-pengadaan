@@ -5,6 +5,7 @@ use App\Models\SpaceNomor;
 use Livewire\WithPagination;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
 
 new class extends Component
 {
@@ -25,7 +26,14 @@ new class extends Component
     public $isUpdate = false;
     public $editId;
 
-    public $tahunList;
+    #[Computed]
+    public function tahunList()
+    {
+        return SpaceNomor::selectRaw('YEAR(tanggal) as tahun')
+            ->distinct()
+            ->orderBy('tahun', 'desc')
+            ->pluck('tahun');
+    }
 
     public function resetFilters()
     {
@@ -33,7 +41,8 @@ new class extends Component
         $this->resetPage();
     }
 
-    public function with()
+    #[Computed]
+    public function spaceNomor()
     {
         $spaceNomor = SpaceNomor::when($this->filter_tgl, function ($query) {
             $query->where('tanggal', Carbon::parse($this->filter_tgl)->format('Y-m-d'));
@@ -55,15 +64,7 @@ new class extends Component
         ->orderBy('nomor_agenda', 'asc')
         ->paginate(10);
 
-        $this->tahunList = SpaceNomor::selectRaw('YEAR(tanggal) as tahun')
-            ->distinct()
-            ->orderBy('tahun', 'desc')
-            ->pluck('tahun');
-
-        return [
-            'spaceNomor' => $spaceNomor,
-            'tahunList' => $this->tahunList
-        ];
+        return $spaceNomor;
     }
 
     public function save()
@@ -170,7 +171,7 @@ new class extends Component
                             <div class="form-group">
                                 <select class="form-control" wire:model.live="filter_tahun">
                                     <option value="">Semua Tahun</option>
-                                    @foreach ($tahunList as $tahun)
+                                    @foreach ($this->tahunList as $tahun)
                                         <option value="{{ $tahun }}">{{ $tahun }}</option>
                                     @endforeach
                                 </select>
@@ -219,9 +220,9 @@ new class extends Component
                             </tr>
                             </thead>
                             <tbody>
-                                @forelse ($spaceNomor as $item)
+                                @forelse ($this->spaceNomor as $item)
                                     <tr>
-                                        <td>{{ $spaceNomor->firstItem() + $loop->index }}</td>
+                                        <td>{{ $this->spaceNomor->firstItem() + $loop->index }}</td>
                                         <td>{{ $item->tanggal }}</td>
                                         <td>{{ $item->nomor_agenda }}</td>
                                         <td>
@@ -251,12 +252,12 @@ new class extends Component
                 </div>
                 <div class="card-footer">
                     <x-utils.pagination
-                        :hasPages="$spaceNomor->hasPages()"
-                        :currentPage="$spaceNomor->currentPage()"
-                        :lastPage="$spaceNomor->lastPage()"
-                        :onFirstPage="$spaceNomor->onFirstPage()"
-                        :hasMorePages="$spaceNomor->hasMorePages()"
-                        :getUrlRange="$spaceNomor->getUrlRange(1, $spaceNomor->lastPage())"
+                        :hasPages="$this->spaceNomor->hasPages()"
+                        :currentPage="$this->spaceNomor->currentPage()"
+                        :lastPage="$this->spaceNomor->lastPage()"
+                        :onFirstPage="$this->spaceNomor->onFirstPage()"
+                        :hasMorePages="$this->spaceNomor->hasMorePages()"
+                        :getUrlRange="$this->spaceNomor->getUrlRange(1, $this->spaceNomor->lastPage())"
                     />
                 </div>
             </div>

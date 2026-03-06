@@ -5,6 +5,7 @@ use App\Models\TanggalLibur;
 use Livewire\WithPagination;
 use Livewire\Attributes\On;
 use Carbon\Carbon;
+use Livewire\Attributes\Computed;
 
 new class extends Component
 {
@@ -24,15 +25,23 @@ new class extends Component
     public $isUpdate = false;
     public $editId;
 
-    public $tahunList;
-
     public function resetFilters()
     {
         $this->reset(['filter_tgl', 'filter_keterangan', 'filter_tahun']);
         $this->resetPage();
     }
 
-    public function with()
+    #[Computed]
+    public function tahunList()
+    {
+        return TanggalLibur::selectRaw('YEAR(tanggal) as tahun')
+            ->distinct()
+            ->orderBy('tahun', 'desc')
+            ->pluck('tahun');
+    }
+
+    #[Computed]
+    public function tanggalLibur()
     {
         $tanggalLibur = TanggalLibur::when($this->filter_tgl, function ($query) {
             $query->where('tanggal', Carbon::parse($this->filter_tgl)->format('Y-m-d'));
@@ -46,15 +55,7 @@ new class extends Component
         ->orderBy('tanggal', 'desc')
         ->paginate(10);
 
-        $this->tahunList = TanggalLibur::selectRaw('YEAR(tanggal) as tahun')
-            ->distinct()
-            ->orderBy('tahun', 'desc')
-            ->pluck('tahun');
-
-        return [
-            'tanggalLibur' => $tanggalLibur,
-            'tahunList' => $this->tahunList
-        ];
+        return $tanggalLibur;
     }
 
     public function save()
@@ -166,7 +167,7 @@ new class extends Component
                             <div class="form-group">
                                 <select class="form-control" wire:model.live="filter_tahun">
                                     <option value="">Semua Tahun</option>
-                                    @foreach ($tahunList as $tahun)
+                                    @foreach ($this->tahunList as $tahun)
                                         <option value="{{ $tahun }}">{{ $tahun }}</option>
                                     @endforeach
                                 </select>
@@ -206,9 +207,9 @@ new class extends Component
                             </tr>
                             </thead>
                             <tbody>
-                                @forelse ($tanggalLibur as $item)
+                                @forelse ($this->tanggalLibur as $item)
                                     <tr>
-                                        <td>{{ $tanggalLibur->firstItem() + $loop->index }}</td>
+                                        <td>{{ $this->tanggalLibur->firstItem() + $loop->index }}</td>
                                         <td>{{ $item->tanggal }}</td>
                                         <td>{{ $item->keterangan }}</td>
                                         <td class="text-end">
@@ -227,12 +228,12 @@ new class extends Component
                 </div>
                 <div class="card-footer">
                     <x-utils.pagination
-                        :hasPages="$tanggalLibur->hasPages()"
-                        :currentPage="$tanggalLibur->currentPage()"
-                        :lastPage="$tanggalLibur->lastPage()"
-                        :onFirstPage="$tanggalLibur->onFirstPage()"
-                        :hasMorePages="$tanggalLibur->hasMorePages()"
-                        :getUrlRange="$tanggalLibur->getUrlRange(1, $tanggalLibur->lastPage())"
+                        :hasPages="$this->tanggalLibur->hasPages()"
+                        :currentPage="$this->tanggalLibur->currentPage()"
+                        :lastPage="$this->tanggalLibur->lastPage()"
+                        :onFirstPage="$this->tanggalLibur->onFirstPage()"
+                        :hasMorePages="$this->tanggalLibur->hasMorePages()"
+                        :getUrlRange="$this->tanggalLibur->getUrlRange(1, $this->tanggalLibur->lastPage())"
                     />
                 </div>
             </div>

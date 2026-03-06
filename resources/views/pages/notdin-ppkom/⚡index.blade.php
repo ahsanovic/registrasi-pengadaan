@@ -11,6 +11,7 @@ use Livewire\Attributes\On;
 use Carbon\Carbon;
 use App\Services\AgendaNumberService;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
 
 new class extends Component
 {
@@ -51,7 +52,8 @@ new class extends Component
         $this->resetPage();
     }
 
-    public function with()
+    #[Computed]
+    public function notdinPpkom()
     {
         $user = auth()->user();
         $query = NotdinPpkom::query();
@@ -82,9 +84,7 @@ new class extends Component
         ->orderBy('nomor_agenda', 'desc')
         ->paginate(10);
 
-        return [
-            'notdinPpkom' => $notdinPpkom,
-        ];
+        return $notdinPpkom;
     }
 
     public function updatedNotdinKpaSearch($value)
@@ -390,9 +390,9 @@ new class extends Component
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($notdinPpkom as $item)
+                                @forelse ($this->notdinPpkom as $item)
                                     <tr>
-                                        <td>{{ $notdinPpkom->firstItem() + $loop->index }}</td>
+                                        <td>{{ $this->notdinPpkom->firstItem() + $loop->index }}</td>
                                         <td>{{ $item->nomor_agenda }}</td>
                                         <td>{{ $item->tanggal }}</td>
                                         <td>{{ $item->notdinKpa->bidang->nama }}</td>
@@ -418,12 +418,12 @@ new class extends Component
                 </div>
                 <div class="card-footer">
                     <x-utils.pagination
-                        :hasPages="$notdinPpkom->hasPages()"
-                        :currentPage="$notdinPpkom->currentPage()"
-                        :lastPage="$notdinPpkom->lastPage()"
-                        :onFirstPage="$notdinPpkom->onFirstPage()"
-                        :hasMorePages="$notdinPpkom->hasMorePages()"
-                        :getUrlRange="$notdinPpkom->getUrlRange(1, $notdinPpkom->lastPage())"
+                        :hasPages="$this->notdinPpkom->hasPages()"
+                        :currentPage="$this->notdinPpkom->currentPage()"
+                        :lastPage="$this->notdinPpkom->lastPage()"
+                        :onFirstPage="$this->notdinPpkom->onFirstPage()"
+                        :hasMorePages="$this->notdinPpkom->hasMorePages()"
+                        :getUrlRange="$this->notdinPpkom->getUrlRange(1, $this->notdinPpkom->lastPage())"
                     />
                 </div>
             </div>

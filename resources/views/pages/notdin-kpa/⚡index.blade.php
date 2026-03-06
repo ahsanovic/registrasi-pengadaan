@@ -10,6 +10,7 @@ use Livewire\Attributes\On;
 use Carbon\Carbon;
 use App\Services\AgendaNumberService;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
 
 new class extends Component
 {
@@ -47,7 +48,8 @@ new class extends Component
         $this->resetPage();
     }
 
-    public function with()
+    #[Computed]
+    public function notdinKpa()
     {
         $user = auth()->user();
         $query = NotdinKpa::query();
@@ -69,9 +71,7 @@ new class extends Component
             ->orderBy('nomor_agenda', 'desc')
             ->paginate(10);
 
-        return [
-            'notdinKpa' => $notdinKpa
-        ];
+        return $notdinKpa;
     }
 
     public function save()
@@ -317,9 +317,9 @@ new class extends Component
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($notdinKpa as $item)
+                                @forelse ($this->notdinKpa as $item)
                                     <tr>
-                                        <td>{{ $notdinKpa->firstItem() + $loop->index }}</td>
+                                        <td>{{ $this->notdinKpa->firstItem() + $loop->index }}</td>
                                         <td>{{ $item->nomor_agenda }}</td>
                                         <td>{{ $item->tanggal }}</td>
                                         <td>{{ $item->bidang->nama }}</td>
@@ -344,12 +344,12 @@ new class extends Component
                 </div>
                 <div class="card-footer">
                     <x-utils.pagination
-                        :hasPages="$notdinKpa->hasPages()"
-                        :currentPage="$notdinKpa->currentPage()"
-                        :lastPage="$notdinKpa->lastPage()"
-                        :onFirstPage="$notdinKpa->onFirstPage()"
-                        :hasMorePages="$notdinKpa->hasMorePages()"
-                        :getUrlRange="$notdinKpa->getUrlRange(1, $notdinKpa->lastPage())"
+                        :hasPages="$this->notdinKpa->hasPages()"
+                        :currentPage="$this->notdinKpa->currentPage()"
+                        :lastPage="$this->notdinKpa->lastPage()"
+                        :onFirstPage="$this->notdinKpa->onFirstPage()"
+                        :hasMorePages="$this->notdinKpa->hasMorePages()"
+                        :getUrlRange="$this->notdinKpa->getUrlRange(1, $this->notdinKpa->lastPage())"
                     />
                 </div>
             </div>
