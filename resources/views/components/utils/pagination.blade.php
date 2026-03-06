@@ -5,7 +5,7 @@
     'onFirstPage' => false,
     'hasMorePages' => false,
     'getUrlRange' => null,
-]);
+])
 
 @if ($hasPages)
 <nav aria-label="Page navigation">
