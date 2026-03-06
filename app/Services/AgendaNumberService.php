@@ -6,6 +6,7 @@ use App\Models\DokumenPengadaan;
 use App\Models\NotdinKpa;
 use App\Models\NotdinPpkom;
 use App\Models\SpaceNomor;
+use App\Models\TanggalLibur;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -67,6 +68,23 @@ class AgendaNumberService
         $now = $nowJakarta ?: Carbon::now('Asia/Jakarta');
         $tanggal = $now->toDateString();
         $tahun = (int) $now->year;
+        $isWeekend = $now->isWeekend();
+        $isTanggalLibur = TanggalLibur::query()
+            ->whereDate('tanggal', $tanggal)
+            ->exists();
+
+        if ($isWeekend || $isTanggalLibur) {
+            return [
+                'tanggal' => $tanggal,
+                'skipped' => true,
+                'reason' => $isWeekend ? 'weekend' : 'tanggal_libur',
+                'nomor_awal' => null,
+                'nomor_akhir' => null,
+                'jumlah_diminta' => $jumlahNomor,
+                'jumlah_dibuat' => 0,
+                'jumlah_sudah_ada' => 0,
+            ];
+        }
 
         return DB::transaction(function () use ($tanggal, $tahun, $jumlahNomor) {
             $lastNomorUserHariIni = $this->getMaxAgendaByDateAcrossMenus($tanggal);
@@ -113,6 +131,8 @@ class AgendaNumberService
 
             return [
                 'tanggal' => $tanggal,
+                'skipped' => false,
+                'reason' => null,
                 'nomor_awal' => $nomorAwal,
                 'nomor_akhir' => $nomorAwal + $jumlahNomor - 1,
                 'jumlah_diminta' => $jumlahNomor,

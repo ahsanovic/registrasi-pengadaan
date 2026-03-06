@@ -11,6 +11,12 @@ Artisan::command('inspire', function () {
 Artisan::command('agenda:generate-space-nomor', function () {
     $result = app(AgendaNumberService::class)->generateDailySpaceNumber(null, 50);
 
+    if ($result['skipped']) {
+        $alasan = $result['reason'] === 'weekend' ? 'weekend (Sabtu/Minggu)' : 'tanggal libur';
+        $this->line("Skip generate space_nomor {$result['tanggal']} karena {$alasan}.");
+        return;
+    }
+
     if ($result['jumlah_dibuat'] > 0) {
         $this->info(
             "Berhasil generate space_nomor {$result['tanggal']} | range {$result['nomor_awal']}-{$result['nomor_akhir']} | dibuat {$result['jumlah_dibuat']} nomor"
