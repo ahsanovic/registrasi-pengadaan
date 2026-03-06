@@ -420,8 +420,8 @@ new class extends Component
                                         <td>{{ $item->notdinKpa->rencana_kegiatan }}</td>
                                         <td>{{ $item->notdinKpa->rencana_anggaran }}</td>
                                         <td>{{ $item->penyedia }}</td>
-                                        <td class="text-wrap">{{ $item->alamat }}</td>
                                         <td>{{ $item->npwp }}</td>
+                                        <td class="text-wrap">{{ $item->alamat }}</td>
                                         <td class="text-end">
                                             <x-buttons.btn-edit action="edit" id="{{ $item->id }}" />
                                             <x-buttons.btn-delete action="deleteConfirmation" id="{{ $item->id }}" />

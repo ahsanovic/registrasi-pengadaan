@@ -91,6 +91,8 @@ new class extends Component
 
     public function save()
     {
+        $this->rencana_anggaran = preg_replace('/\D/', '', (string) $this->rencana_anggaran);
+
         $this->validate([
             'tanggal' => 'required|date',
             'program' => 'required|string|max:255',
@@ -226,7 +228,7 @@ new class extends Component
         $this->kegiatan = $data->kegiatan;
         $this->mata_anggaran = $data->mata_anggaran;
         $this->rencana_kegiatan = $data->rencana_kegiatan;
-        $this->rencana_anggaran = str_replace('Rp ', '', str_replace('.', '', $data->rencana_anggaran));
+        $this->rencana_anggaran = preg_replace('/\D/', '', (string) $data->rencana_anggaran);
         $this->editId = $id;
         $this->showModal = true;
         $this->isUpdate = true;
@@ -408,7 +410,22 @@ new class extends Component
                         <x-form.input label="Kegiatan" model="kegiatan" required />
                         <x-form.input label="Mata Anggaran" model="mata_anggaran" required />
                         <x-form.textarea label="Rencana Kegiatan" model="rencana_kegiatan" required />
-                        <x-form.input label="Rencana Anggaran" model="rencana_anggaran" required />
+                        <div class="mb-3">
+                            <label for="input-rencana_anggaran-display" class="form-label">
+                                Rencana Anggaran <span class="text-danger">*</span>
+                            </label>
+                            <input
+                                id="input-rencana_anggaran-display"
+                                type="text"
+                                class="form-control @error('rencana_anggaran') is-invalid @enderror"
+                                autocomplete="off"
+                                inputmode="numeric"
+                            >
+                            <input id="input-rencana_anggaran-raw" type="hidden" wire:model="rencana_anggaran">
+                            @error('rencana_anggaran')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -424,19 +441,58 @@ new class extends Component
     <script>
         Livewire.on('modalOpened', () => {
             setTimeout(() => {
+                const getComponent = (element) => {
+                    const root = element?.closest('[wire\\:id]');
+                    if (!root) return null;
+                    return Livewire.find(root.getAttribute('wire:id'));
+                };
+
                 document.querySelectorAll('[data-flatpickr]').forEach(el => {
                     if (!el._flatpickr) {
                         flatpickr(el, {
                             dateFormat: 'd-m-Y',
                             onChange: function(selectedDates, dateStr) {
                                 const model = el.getAttribute('data-model');
-                                if (model) {
-                                    @this.set(model, dateStr);
+                                const component = getComponent(el);
+                                if (model && component) {
+                                    component.set(model, dateStr);
                                 }
                             }
                         });
                     }
                 });
+
+                const anggaranInputDisplay = document.getElementById('input-rencana_anggaran-display');
+                const anggaranInputRaw = document.getElementById('input-rencana_anggaran-raw');
+                if (anggaranInputDisplay && anggaranInputRaw) {
+                    const formatRupiah = (value) => {
+                        const angka = (value || '').toString().replace(/\D/g, '');
+                        if (!angka) {
+                            return { raw: '', formatted: '' };
+                        }
+
+                        return {
+                            raw: angka,
+                            formatted: `Rp ${angka.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`,
+                        };
+                    };
+
+                    const syncAnggaran = (sourceValue) => {
+                        const { raw, formatted } = formatRupiah(sourceValue);
+                        anggaranInputDisplay.value = formatted;
+                        anggaranInputRaw.value = raw;
+                        anggaranInputRaw.dispatchEvent(new Event('input', { bubbles: true }));
+                    };
+
+                    if (!anggaranInputDisplay.dataset.rupiahBound) {
+                        anggaranInputDisplay.addEventListener('input', (event) => {
+                            syncAnggaran(event.target.value);
+                        });
+                        anggaranInputDisplay.dataset.rupiahBound = '1';
+                    }
+
+                    syncAnggaran(anggaranInputRaw.value);
+                }
             }, 200);
         });
     </script>
